@@ -13,6 +13,7 @@ import type { Cuisine } from "@/features/recipes/types/recipe";
  *   - search / cuisine : bộ lọc, sẽ được đưa vào query key ["recipes","list",filters].
  *   - viewMode         : chế độ hiển thị grid/list.
  *   - favoriteIds      : danh sách recipe yêu thích (chỉ ở phía client).
+ *   - favoritesOnly    : chỉ hiển thị recipe có id trong favoriteIds (chỉ ở phía client).
  *
  * Dùng middleware `persist` để lưu vào localStorage -> reload trang vẫn giữ.
  *
