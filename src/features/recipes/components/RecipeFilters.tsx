@@ -30,9 +30,11 @@ export function RecipeFilters() {
   const storeSearch = useRecipePreferences((s) => s.search);
   const cuisine = useRecipePreferences((s) => s.cuisine);
   const viewMode = useRecipePreferences((s) => s.viewMode);
+  const favoritesOnly = useRecipePreferences((s) => s.favoritesOnly);
   const setSearch = useRecipePreferences((s) => s.setSearch);
   const setCuisine = useRecipePreferences((s) => s.setCuisine);
   const setViewMode = useRecipePreferences((s) => s.setViewMode);
+  const setFavoritesOnly = useRecipePreferences((s) => s.setFavoritesOnly);
 
   // `null` = user CHƯA gõ gì -> ô input hiển thị theo store.
   const [draft, setDraft] = useState<string | null>(null);
@@ -101,6 +103,17 @@ export function RecipeFilters() {
           ≣ Danh sách
         </Button>
       </div>
+
+      <Button
+        type="button"
+        size="sm"
+        variant={favoritesOnly ? "primary" : "ghost"}
+        aria-pressed={favoritesOnly}
+        className="whitespace-nowrap"
+        onClick={() => setFavoritesOnly(!favoritesOnly)}
+      >
+        Chỉ xem yêu thích
+      </Button>
     </div>
   );
 }

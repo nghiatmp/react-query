@@ -23,6 +23,9 @@ export function RecipeList({ onOpen, onCreate }: RecipeListProps) {
   const search = useRecipePreferences((s) => s.search);
   const cuisine = useRecipePreferences((s) => s.cuisine);
   const viewMode = useRecipePreferences((s) => s.viewMode);
+  const favoritesOnly = useRecipePreferences((s) => s.favoritesOnly);
+  const favoriteIds = useRecipePreferences((s) => s.favoriteIds);
+  const setFavoritesOnly = useRecipePreferences((s) => s.setFavoritesOnly);
 
   // Truyền filter làm tham số -> cũng chính là phần động của query key.
   const {
@@ -47,7 +50,48 @@ export function RecipeList({ onOpen, onCreate }: RecipeListProps) {
     );
   }
 
-  // 3) EMPTY: thành công nhưng danh sách rỗng.
+  // Lọc client-side sau khi query server đã áp dụng search/cuisine.
+  // Chỉ giữ lại object từ React Query, không đưa bản sao recipe vào Zustand.
+  const visibleRecipes = favoritesOnly
+    ? recipes.filter((recipe) => favoriteIds.includes(recipe.id))
+    : recipes;
+
+  // Query thành công nhưng không có favorite nào khớp với chế độ hiện tại.
+  // Nhánh này đứng trước empty state server để cả trường hợp search/cuisine
+  // trả về mảng rỗng vẫn giải thích đúng lý do khi đang bật favoritesOnly.
+  if (favoritesOnly && visibleRecipes.length === 0) {
+    const hasNoFavorites = favoriteIds.length === 0;
+
+    return (
+      <div>
+        {isFetching && (
+          <p className="mb-2 text-xs text-orange-600">Đang cập nhật...</p>
+        )}
+        <EmptyState
+          title={
+            hasNoFavorites
+              ? "Chưa có công thức yêu thích"
+              : "Không có công thức yêu thích phù hợp"
+          }
+          description={
+            hasNoFavorites
+              ? "Hãy bấm biểu tượng tim trên công thức để thêm vào danh sách yêu thích."
+              : "Không có công thức yêu thích nào khớp tìm kiếm hoặc ẩm thực hiện tại."
+          }
+          action={
+            <Button
+              variant="secondary"
+              onClick={() => setFavoritesOnly(false)}
+            >
+              Tắt chế độ chỉ xem yêu thích
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
+  // 3) EMPTY: thành công nhưng danh sách server rỗng.
   if (recipes.length === 0) {
     return (
       <EmptyState
@@ -71,7 +115,7 @@ export function RecipeList({ onOpen, onCreate }: RecipeListProps) {
             : "flex flex-col gap-3",
         )}
       >
-        {recipes.map((recipe) => (
+        {visibleRecipes.map((recipe) => (
           <RecipeCard
             key={recipe.id}
             recipe={recipe}

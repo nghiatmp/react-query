@@ -49,7 +49,12 @@ interface RecipePreferencesState {
   // --- yêu thích ---
   favoriteIds: string[];
   toggleFavorite: (id: string) => void;
+  removeFavorite: (id: string) => void;
   isFavorite: (id: string) => boolean;
+
+  // --- chỉ xem yêu thích ---
+  favoritesOnly: boolean;
+  setFavoritesOnly: (favoritesOnly: boolean) => void;
 }
 
 export const useRecipePreferences = create<RecipePreferencesState>()(
@@ -71,7 +76,14 @@ export const useRecipePreferences = create<RecipePreferencesState>()(
             ? state.favoriteIds.filter((favId) => favId !== id)
             : [...state.favoriteIds, id],
         })),
+      removeFavorite: (id) =>
+        set((state) => ({
+          favoriteIds: state.favoriteIds.filter((favId) => favId !== id),
+        })),
       isFavorite: (id) => get().favoriteIds.includes(id),
+
+      favoritesOnly: false,
+      setFavoritesOnly: (favoritesOnly) => set({ favoritesOnly }),
     }),
     {
       name: "recipe-preferences", // key trong localStorage
