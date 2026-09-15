@@ -7,6 +7,7 @@ Quản lý **client state** — tùy chọn hiển thị của người dùng, k
 - `search` / `cuisine`: bộ lọc (sẽ được đưa vào query key của React Query).
 - `viewMode`: chế độ hiển thị `grid` / `list`.
 - `favoriteIds`: danh sách recipe yêu thích (chỉ ở phía client).
+- `favoritesOnly`: bật chế độ chỉ hiển thị recipe có ID nằm trong `favoriteIds` (chỉ ở phía client).
 
 > Nhắc lại ranh giới: server state (recipe) → React Query; client state (tùy chọn) → Zustand.
 > Xem [02-server-vs-client-state.md](02-server-vs-client-state.md).
@@ -27,6 +28,7 @@ export const useRecipePreferences = create<RecipePreferencesState>()(
       cuisine: "all",
       viewMode: "grid",
       favoriteIds: [],
+      favoritesOnly: false,
 
       // --- actions (hàm sửa state) ---
       setSearch: (search) => set({ search }),
@@ -40,7 +42,12 @@ export const useRecipePreferences = create<RecipePreferencesState>()(
             ? state.favoriteIds.filter((f) => f !== id)  // đang có → bỏ ra
             : [...state.favoriteIds, id],                // chưa có → thêm vào
         })),
+      removeFavorite: (id) =>
+        set((state) => ({
+          favoriteIds: state.favoriteIds.filter((f) => f !== id),
+        })),
       isFavorite: (id) => get().favoriteIds.includes(id),
+      setFavoritesOnly: (favoritesOnly) => set({ favoritesOnly }),
     }),
     { name: "recipe-preferences" },  // key trong localStorage
   ),
@@ -97,7 +104,9 @@ RecipeFilters ──setSearch()──▶ Zustand ──đọc filter──▶ us
 
 - Filter đổi trong Zustand → `RecipeList` đọc ra, truyền vào `useRecipes({search,cuisine})`.
 - Filter nằm trong **query key** → React Query tự refetch cho bộ filter mới.
-- Còn `viewMode` và `favorites` là thuần client → đổi **không** gọi lại API.
+- Còn `viewMode`, `favoritesOnly` và `favoriteIds` là thuần client → đổi **không** gọi lại API.
+  Khi bật `favoritesOnly`, `RecipeList` lọc kết quả server theo `favoriteIds`; search/cuisine vẫn
+  là bộ lọc server nên kết quả là giao của hai lớp lọc.
 
 Đây là sự phân công đẹp: Zustand giữ "người dùng muốn xem gì", React Query lo "lấy đúng data đó".
 

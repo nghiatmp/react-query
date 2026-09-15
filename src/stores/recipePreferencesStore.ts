@@ -13,6 +13,7 @@ import type { Cuisine } from "@/features/recipes/types/recipe";
  *   - search / cuisine : bộ lọc, sẽ được đưa vào query key ["recipes","list",filters].
  *   - viewMode         : chế độ hiển thị grid/list.
  *   - favoriteIds      : danh sách recipe yêu thích (chỉ ở phía client).
+ *   - favoritesOnly    : chỉ hiển thị recipe có id trong favoriteIds (chỉ ở phía client).
  *
  * Dùng middleware `persist` để lưu vào localStorage -> reload trang vẫn giữ.
  *
@@ -49,7 +50,12 @@ interface RecipePreferencesState {
   // --- yêu thích ---
   favoriteIds: string[];
   toggleFavorite: (id: string) => void;
+  removeFavorite: (id: string) => void;
   isFavorite: (id: string) => boolean;
+
+  // --- chỉ xem yêu thích ---
+  favoritesOnly: boolean;
+  setFavoritesOnly: (favoritesOnly: boolean) => void;
 }
 
 export const useRecipePreferences = create<RecipePreferencesState>()(
@@ -71,7 +77,14 @@ export const useRecipePreferences = create<RecipePreferencesState>()(
             ? state.favoriteIds.filter((favId) => favId !== id)
             : [...state.favoriteIds, id],
         })),
+      removeFavorite: (id) =>
+        set((state) => ({
+          favoriteIds: state.favoriteIds.filter((favId) => favId !== id),
+        })),
       isFavorite: (id) => get().favoriteIds.includes(id),
+
+      favoritesOnly: false,
+      setFavoritesOnly: (favoritesOnly) => set({ favoritesOnly }),
     }),
     {
       name: "recipe-preferences", // key trong localStorage
