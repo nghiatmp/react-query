@@ -12,7 +12,7 @@ service cloud.firestore {
       return data.keys().hasAll(['id', 'name', 'description', 'cuisine', 'cookTimeMinutes', 'ingredientCount', 'createdAt', 'revision'])
         && data.keys().hasOnly(['id', 'name', 'description', 'cuisine', 'cookTimeMinutes', 'ingredientCount', 'createdAt', 'revision'])
         && data.id == id && text(id, 1, 128)
-        && text(data.name, 2, 200) && data.name.trim().size() >= 2
+        && text(data.name, 2, 200) && data.name.trim().size() >= 2 && nonBlank(data.name)
         && text(data.description, 5, 500)
         && data.cuisine in ['italian', 'japanese', 'mexican', 'indian', 'american', 'other']
         && data.cookTimeMinutes is int && data.cookTimeMinutes > 0 && data.cookTimeMinutes <= 1000

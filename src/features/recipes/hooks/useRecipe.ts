@@ -18,5 +18,6 @@ export function useRecipe(id: string | null) {
     queryKey: scopedRecipeKey(user?.uid, recipeKeys.detail(id ?? "")),
     queryFn: () => user ? cloudRecipe(user.uid, id as string) : fetchRecipe(id as string),
     enabled: ready && !!id,
+    refetchOnWindowFocus: !!user,
   });
 }

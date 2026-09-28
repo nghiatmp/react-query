@@ -12,14 +12,16 @@ import { useRecipes } from "@/features/recipes/hooks/useRecipes";
 import { useFavorites } from "@/features/auth/useFavorites";
 import { RecipePhoto } from "@/features/recipes/components/RecipePhoto";
 import { cn } from "@/lib/utils/cn";
-import { MEALS, MEAL_LABELS, DAYS, addDays, dateKey, parseDate, type Meal } from "./model";
+import { MEALS, MEAL_LABELS, DAYS, addDays, parseDate, type Meal } from "./model";
 import { useWeek, useChangeWeek } from "./hooks";
 import { WeekControls } from "./WeekControls";
+import { useBrowserWeek } from "./useBrowserWeek";
 const icons = { breakfast: Sunrise, lunch: Sun, dinner: Moon };
-export function MealPlanner({ initialWeek }: { initialWeek: string }) {
-  return <AppShell><PlannerContent initialWeek={initialWeek}/></AppShell>;
+export function MealPlanner({ initialWeek }: { initialWeek?: string }) {
+  const browser = useBrowserWeek(initialWeek);
+  return <AppShell>{browser.week ? <PlannerContent initialWeek={browser.week} today={browser.today}/> : <LoadingState label="Đang xác định tuần hiện tại…"/>}</AppShell>;
 }
-function PlannerContent({ initialWeek }: { initialWeek: string }) {
+function PlannerContent({ initialWeek, today }: { initialWeek: string; today: string | null }) {
   const [week, setWeek] = useState(initialWeek); const [day, setDay] = useState(0);
   const [slot, setSlot] = useState<string | null>(null); const [search, setSearch] = useState(""); const [onlyFavorites, setOnlyFavorites] = useState(false);
   const [copyOpen, setCopyOpen] = useState(false); const [notice, setNotice] = useState("");
@@ -42,7 +44,7 @@ function PlannerContent({ initialWeek }: { initialWeek: string }) {
     {loading ? <LoadingState label="Đang tải thực đơn…"/> : query.isError || recipes.isError ? <ErrorState message="Không tải được thực đơn hoặc công thức" onRetry={() => { void query.refetch(); void recipes.refetch(); }}/> : <>
       <div className="mb-5 grid grid-cols-7 gap-1 lg:hidden" aria-label="Chọn ngày">{DAYS.map((name, index) => <button key={name} type="button" aria-label={name} aria-pressed={day === index} onClick={() => setDay(index)} className={cn("rounded-xl py-2 text-center text-xs", day === index ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground")}><span className="block">{index === 6 ? "CN" : `T${index+2}`}</span><span className="mt-1 block text-base font-semibold">{parseDate(addDays(week,index)).getDate()}</span></button>)}</div>
       <div className="grid gap-3 lg:grid-cols-7">{DAYS.map((name, index) => <section key={name} className={cn("min-w-0", day !== index && "hidden lg:block")} aria-label={name}>
-        <div className={cn("mb-3 rounded-xl border px-3 py-3", addDays(week,index) === dateKey(new Date()) ? "border-primary bg-accent" : "bg-card")}><h2 className="text-sm font-semibold">{name}</h2><p className="mt-1 text-xs text-muted-foreground">{parseDate(addDays(week,index)).toLocaleDateString("vi-VN", { day: "numeric", month: "numeric" })}{addDays(week,index) === dateKey(new Date()) && " · Hôm nay"}</p></div>
+        <div className={cn("mb-3 rounded-xl border px-3 py-3", addDays(week,index) === today ? "border-primary bg-accent" : "bg-card")}><h2 className="text-sm font-semibold">{name}</h2><p className="mt-1 text-xs text-muted-foreground">{parseDate(addDays(week,index)).toLocaleDateString("vi-VN", { day: "numeric", month: "numeric" })}{addDays(week,index) === today && " · Hôm nay"}</p></div>
         <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">{MEALS.map((meal: Meal) => {
           const key = `${index}-${meal}`; const recipeId = query.data?.slots[key]; const recipe = recipes.data?.find(r => r.id === recipeId); const Icon = icons[meal];
           return <div key={meal} className="flex min-h-48 flex-col rounded-2xl border bg-card p-3 lg:h-72"><p className="mb-3 flex items-center gap-1.5 text-xs font-medium text-muted-foreground"><Icon size={14} aria-hidden="true"/>{MEAL_LABELS[meal]}</p>

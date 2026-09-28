@@ -7,7 +7,7 @@ import type { Week, ShoppingItem } from "./model";
 export const plannerKey = (uid: string | undefined, week: string, part: string) => uid ? ["personal", uid, "planner", week, part] : ["demo-planner", week, part];
 export function useWeek(week: string) {
   const { user, ready } = useAuth();
-  return useQuery({ queryKey: plannerKey(user?.uid, week, "week"), queryFn: () => user ? cloud.cloudWeek(user.uid, week) : local.localWeek(week), enabled: ready, refetchInterval: user ? 30000 : false });
+  return useQuery({ queryKey: plannerKey(user?.uid, week, "week"), queryFn: () => user ? cloud.cloudWeek(user.uid, week) : local.localWeek(week), enabled: ready, refetchInterval: user ? 30000 : false, refetchOnWindowFocus: !!user });
 }
 export function useChangeWeek(week: string) {
   const { user } = useAuth(); const client = useQueryClient();
@@ -18,7 +18,7 @@ export function useChangeWeek(week: string) {
 }
 export function useShopping(week: string) {
   const { user, ready } = useAuth();
-  return useQuery({ queryKey: plannerKey(user?.uid, week, "items"), queryFn: () => user ? cloud.cloudItems(user.uid, week) : local.localItems(week), enabled: ready, refetchInterval: user ? 30000 : false });
+  return useQuery({ queryKey: plannerKey(user?.uid, week, "items"), queryFn: () => user ? cloud.cloudItems(user.uid, week) : local.localItems(week), enabled: ready, refetchInterval: user ? 30000 : false, refetchOnWindowFocus: !!user });
 }
 export type ShoppingAction = { type: "add"; items: ShoppingItem[] } | { type: "edit"; id: string; patch: Partial<ShoppingItem> } | { type: "remove"; id: string };
 export function useShoppingMutation(week: string) {

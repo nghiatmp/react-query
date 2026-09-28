@@ -23,6 +23,7 @@ export function useRecipes(filters: RecipeFilters, demoOnly = false) {
     // -> danh sách không "nhấp nháy" về trạng thái loading rỗng.
     enabled: demoOnly || auth.ready,
     refetchInterval: user ? 30000 : false,
+    refetchOnWindowFocus: !!user,
     placeholderData: (previous, previousQuery) => previousQuery?.queryKey[0] === (user ? "personal" : "recipes") && (!user || previousQuery?.queryKey[1] === user.uid) ? keepPreviousData(previous) : undefined,
   });
 }

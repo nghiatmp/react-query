@@ -70,7 +70,7 @@ describe("Firestore ownership, atomic adapter and validation (actual emulator)",
     }
     await assertFails(deleteDoc(doc(db, `users/alice/recipes/${created.id}/ingredients/0`)));
     await assertFails(setDoc(doc(db, "users/alice/recipes/missing/ingredients/0"), { name: "Egg", amount: "1", index: 0, revision: 1 }));
-    for (const bad of [{ createdAt: "2026-09-29T00:00:00.000Z" }, { ingredientCount: 31 }, { ingredientCount: 0 }, { admin: true }, { name: 7 }, { cuisine: "bad" }, { cookTimeMinutes: -1 }]) await assertFails(updateDoc(parent, { ...bad, revision: 2 }));
+    for (const bad of [{ createdAt: "2026-09-29T00:00:00.000Z" }, { ingredientCount: 31 }, { ingredientCount: 0 }, { admin: true }, { name: 7 }, { name: "\u00a0\u00a0" }, { cuisine: "bad" }, { cookTimeMinutes: -1 }]) await assertFails(updateDoc(parent, { ...bad, revision: 2 }));
     await assertFails(setDoc(doc(db, "public/data"), { open: true }));
   });
   it("rejects invalid week, slot, shopping and favorite fields", async () => {

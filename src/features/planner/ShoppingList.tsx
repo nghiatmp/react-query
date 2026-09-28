@@ -13,8 +13,10 @@ import { cn } from "@/lib/utils/cn";
 import { useWeek, useShopping, useShoppingMutation } from "./hooks";
 import { shoppingFromWeek, itemSchema, type ShoppingItem } from "./model";
 import { WeekControls } from "./WeekControls";
-export function ShoppingList({ initialWeek }: { initialWeek: string }) {
-  return <AppShell><ShoppingContent initialWeek={initialWeek}/></AppShell>;
+import { useBrowserWeek } from "./useBrowserWeek";
+export function ShoppingList({ initialWeek }: { initialWeek?: string }) {
+  const browser = useBrowserWeek(initialWeek);
+  return <AppShell>{browser.week ? <ShoppingContent initialWeek={browser.week}/> : <LoadingState label="Đang xác định tuần hiện tại…"/>}</AppShell>;
 }
 function ShoppingContent({ initialWeek }: { initialWeek: string }) {
   const [week, setWeek] = useState(initialWeek); const [editor, setEditor] = useState<ShoppingItem | "new" | null>(null);
