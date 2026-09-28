@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Recipe Planner - Học React Query",
-  description: "Demo React Query + Zustand + Zod với Next.js App Router",
+  title: "Bếp nhà — Công thức & thực đơn tuần",
+  description: "Lưu công thức ngon, lên thực đơn tuần và chuẩn bị danh sách đi chợ.",
 };
 
 // layout.tsx là SERVER component (mặc định) - không cần "use client".

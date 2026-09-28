@@ -111,18 +111,20 @@ export function RecipeForm({
       />
 
       <div className="flex flex-col gap-1">
-        <label htmlFor="description" className="text-sm font-medium text-gray-700">
+        <label htmlFor="description" className="text-sm font-medium">
           Mô tả
         </label>
         <textarea
           id="description"
           rows={3}
-          className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+          className="rounded-xl border bg-card px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-ring/30"
+          aria-invalid={!!errors.description || undefined}
+          aria-describedby={errors.description ? "description-error" : undefined}
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
         {errors["description"] && (
-          <span className="text-xs text-red-600">{errors["description"]}</span>
+          <span id="description-error" className="text-xs text-destructive">{errors["description"]}</span>
         )}
       </div>
 
@@ -152,8 +154,8 @@ export function RecipeForm({
       {/* Danh sách nguyên liệu động (thêm/xoá dòng) */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-700">Nguyên liệu</span>
-          <Button type="button" size="sm" variant="secondary" onClick={addIngredient}>
+          <span className="text-sm font-medium">Nguyên liệu ({form.ingredients.length}/30)</span>
+          <Button type="button" size="sm" variant="secondary" disabled={form.ingredients.length >= 30 || isSubmitting} onClick={addIngredient}>
             + Thêm nguyên liệu
           </Button>
         </div>
@@ -162,6 +164,7 @@ export function RecipeForm({
           <div key={index} className="flex items-start gap-2">
             <div className="flex-1">
               <Input
+                aria-label={`Tên nguyên liệu ${index + 1}`}
                 placeholder="Tên (vd: Trứng gà)"
                 value={ing.name}
                 onChange={(e) => updateIngredient(index, "name", e.target.value)}
@@ -170,6 +173,7 @@ export function RecipeForm({
             </div>
             <div className="w-28">
               <Input
+                aria-label={`Định lượng ${index + 1}`}
                 placeholder="Định lượng"
                 value={ing.amount}
                 onChange={(e) =>
@@ -183,7 +187,7 @@ export function RecipeForm({
                 type="button"
                 size="sm"
                 variant="ghost"
-                className="mt-0.5 text-red-500"
+                className="mt-0.5 text-destructive"
                 onClick={() => removeIngredient(index)}
                 aria-label="Xoá nguyên liệu"
               >
@@ -194,13 +198,13 @@ export function RecipeForm({
         ))}
         {/* Lỗi cấp mảng, vd: "Cần ít nhất 1 nguyên liệu" */}
         {errors["ingredients"] && (
-          <span className="text-xs text-red-600">{errors["ingredients"]}</span>
+          <span className="text-xs text-destructive">{errors["ingredients"]}</span>
         )}
       </div>
 
       {/* Lỗi trả về từ server (nếu mutation thất bại) */}
       {serverError && (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p role="alert" className="rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {serverError}
         </p>
       )}

@@ -1,6 +1,8 @@
+import { useAuth } from "@/features/auth/AuthProvider";
+import { cloudUpdateRecipe } from "@/lib/firebase/repository";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateRecipe } from "../api/recipeApi";
-import { recipeKeys } from "./recipeKeys";
+import { recipeKeys, scopedRecipeKey } from "./recipeKeys";
 import type { Recipe, RecipeFormValues } from "../types/recipe";
 
 /**
@@ -12,17 +14,18 @@ import type { Recipe, RecipeFormValues } from "../types/recipe";
  */
 export function useUpdateRecipe() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: ({ id, values }: { id: string; values: RecipeFormValues }) =>
-      updateRecipe(id, values),
+      user ? cloudUpdateRecipe(user.uid, id, values) : updateRecipe(id, values),
 
     onSuccess: (updated: Recipe) => {
       // (1) Cập nhật ngay cache chi tiết của đúng recipe này.
-      queryClient.setQueryData(recipeKeys.detail(updated.id), updated);
+      queryClient.setQueryData(scopedRecipeKey(user?.uid, recipeKeys.detail(updated.id)), updated);
 
       // (2) Làm mới danh sách để tên/mô tả mới hiển thị đúng.
-      queryClient.invalidateQueries({ queryKey: recipeKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: scopedRecipeKey(user?.uid, recipeKeys.lists()) });
     },
   });
 }

@@ -10,7 +10,7 @@ import type { RecipeFilters } from "../types/recipe";
 const filters: RecipeFilters = { search: "", cuisine: "all" };
 
 export function SsrRecipeList() {
-  const { data, isPending, isFetching } = useRecipes(filters);
+  const { data, isPending, isFetching } = useRecipes(filters, true);
 
   // Chụp lại trạng thái ở LẦN RENDER ĐẦU TIÊN trên client để chứng minh:
   // vì data đã được server nhét sẵn vào cache nên isPending = false ngay,

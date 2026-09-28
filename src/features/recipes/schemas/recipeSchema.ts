@@ -32,8 +32,8 @@ export const CUISINE_LABELS: Record<(typeof CUISINES)[number], string> = {
 
 // Một nguyên liệu = tên + định lượng.
 export const ingredientSchema = z.object({
-  name: z.string().min(1, "Tên nguyên liệu không được để trống"),
-  amount: z.string().min(1, "Định lượng không được để trống"),
+  name: z.string().trim().min(1, "Tên nguyên liệu không được để trống").max(200),
+  amount: z.string().trim().min(1, "Định lượng không được để trống").max(100),
 });
 
 // Schema đầy đủ của một recipe (giống hệt dữ liệu server trả về).
@@ -56,7 +56,7 @@ export const recipeListSchema = z.array(recipeSchema);
  * và ràng buộc chặt hơn để hướng dẫn người dùng nhập liệu.
  */
 export const recipeFormSchema = z.object({
-  name: z.string().min(2, "Tên món cần ít nhất 2 ký tự"),
+  name: z.string().trim().min(2, "Tên món cần ít nhất 2 ký tự").max(200),
   description: z
     .string()
     .min(5, "Mô tả cần ít nhất 5 ký tự")
@@ -70,5 +70,5 @@ export const recipeFormSchema = z.object({
     .max(1000, "Tối đa 1000 phút"),
   ingredients: z
     .array(ingredientSchema)
-    .min(1, "Cần ít nhất 1 nguyên liệu"),
+    .min(1, "Cần ít nhất 1 nguyên liệu").max(30, "Tối đa 30 nguyên liệu mỗi công thức"),
 });

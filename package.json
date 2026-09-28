@@ -8,12 +8,19 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:rules": "vitest run --config vitest.firebase.config.ts",
+    "test:emulators": "firebase emulators:exec --only auth,firestore --project demo-meal-planner \"npm run test:rules\""
   },
   "dependencies": {
     "@tanstack/react-query": "^5.102.4",
     "@tanstack/react-query-devtools": "^5.102.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "firebase": "^12.19.0",
+    "lucide-react": "^1.48.0",
     "next": "16.3.3",
+    "radix-ui": "^1.6.7",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "tailwind-merge": "^3.6.0",
@@ -21,6 +28,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.2",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
@@ -30,6 +38,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
+    "firebase-tools": "^15.31.0",
     "jsdom": "^27.0.1",
     "tailwindcss": "^4",
     "typescript": "^5",

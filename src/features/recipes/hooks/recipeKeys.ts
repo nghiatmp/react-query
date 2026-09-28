@@ -23,3 +23,5 @@ export const recipeKeys = {
   details: () => [...recipeKeys.all, "detail"] as const,
   detail: (id: string) => [...recipeKeys.details(), id] as const,
 };
+
+export const scopedRecipeKey = (uid: string | undefined, key: readonly unknown[]) => uid ? ["personal", uid, ...key] : key;

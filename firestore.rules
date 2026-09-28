@@ -1,0 +1,112 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owner(uid) { return request.auth != null && request.auth.uid == uid; }
+    function text(value, min, max) { return value is string && value.size() >= min && value.size() <= max; }
+    // Match JavaScript/Zod trim whitespace, including NBSP; Rules trim() alone
+    // leaves Unicode-only whitespace untouched in the emulator.
+    function nonBlank(value) {
+      return !value.matches('[\\s\\x{00a0}\\x{1680}\\x{2000}-\\x{200a}\\x{2028}\\x{2029}\\x{202f}\\x{205f}\\x{3000}\\x{feff}]*');
+    }
+    function recipe(data, id) {
+      return data.keys().hasAll(['id', 'name', 'description', 'cuisine', 'cookTimeMinutes', 'ingredientCount', 'createdAt', 'revision'])
+        && data.keys().hasOnly(['id', 'name', 'description', 'cuisine', 'cookTimeMinutes', 'ingredientCount', 'createdAt', 'revision'])
+        && data.id == id && text(id, 1, 128)
+        && text(data.name, 2, 200) && data.name.trim().size() >= 2
+        && text(data.description, 5, 500)
+        && data.cuisine in ['italian', 'japanese', 'mexican', 'indian', 'american', 'other']
+        && data.cookTimeMinutes is int && data.cookTimeMinutes > 0 && data.cookTimeMinutes <= 1000
+        && data.ingredientCount is int && data.ingredientCount > 0 && data.ingredientCount <= 30
+        && data.revision is int && data.revision > 0
+        && text(data.createdAt, 20, 40) && data.createdAt.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}T.*Z');
+    }
+    function ingredient(data, index) {
+      return data.keys().hasAll(['name', 'amount', 'index', 'revision'])
+        && data.keys().hasOnly(['name', 'amount', 'index', 'revision'])
+        && text(data.name, 1, 200) && nonBlank(data.name)
+        && text(data.amount, 1, 100) && nonBlank(data.amount)
+        && index.matches('[0-9]|1[0-9]|2[0-9]') && data.index == int(index)
+        && data.revision is int && data.revision > 0;
+    }
+    function monday(key) {
+      let parts = key.split('-');
+      let date = timestamp.date(int(parts[0]), int(parts[1]), int(parts[2]));
+      return key.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}')
+        && date.year() == int(parts[0]) && date.month() == int(parts[1]) && date.day() == int(parts[2])
+        && date.dayOfWeek() == 1;
+    }
+    function slot(data, key) { return !(key in data) || text(data[key], 1, 128); }
+    function slots(data) {
+      return data is map && data.keys().hasOnly(['0-breakfast', '0-lunch', '0-dinner', '1-breakfast', '1-lunch', '1-dinner', '2-breakfast', '2-lunch', '2-dinner', '3-breakfast', '3-lunch', '3-dinner', '4-breakfast', '4-lunch', '4-dinner', '5-breakfast', '5-lunch', '5-dinner', '6-breakfast', '6-lunch', '6-dinner'])
+        && slot(data, '0-breakfast')
+        && slot(data, '0-lunch')
+        && slot(data, '0-dinner')
+        && slot(data, '1-breakfast')
+        && slot(data, '1-lunch')
+        && slot(data, '1-dinner')
+        && slot(data, '2-breakfast')
+        && slot(data, '2-lunch')
+        && slot(data, '2-dinner')
+        && slot(data, '3-breakfast')
+        && slot(data, '3-lunch')
+        && slot(data, '3-dinner')
+        && slot(data, '4-breakfast')
+        && slot(data, '4-lunch')
+        && slot(data, '4-dinner')
+        && slot(data, '5-breakfast')
+        && slot(data, '5-lunch')
+        && slot(data, '5-dinner')
+        && slot(data, '6-breakfast')
+        && slot(data, '6-lunch')
+        && slot(data, '6-dinner');
+    }
+    function shopping(data) {
+      return data.keys().hasAll(['name', 'amount', 'checked', 'source'])
+        && data.keys().hasOnly(['name', 'amount', 'checked', 'source'])
+        && text(data.name, 1, 200) && nonBlank(data.name)
+        && text(data.amount, 1, 100) && nonBlank(data.amount)
+        && data.checked is bool && text(data.source, 0, 300);
+    }
+    match /users/{uid}/recipes/{id} {
+      allow read, delete: if owner(uid);
+      allow create, update: if owner(uid) && recipe(request.resource.data, id)
+        && ((request.method == 'create' && request.resource.data.revision == 1)
+          || (request.method == 'update' && request.resource.data.createdAt == resource.data.createdAt
+            // Firestore's transaction read precondition owns conflict detection.
+            // Permit equal revisions here so a stale contender can be aborted
+            // and retried rather than rejected before the precondition is checked.
+            && request.resource.data.revision >= resource.data.revision));
+      match /ingredients/{index} {
+        allow read: if owner(uid);
+        // Every ingredient write binds to the same post-commit parent. This
+        // lookup is cached across the atomic batch, including the 30-item case.
+        allow create, update: if owner(uid) && ingredient(request.resource.data, index)
+          && request.resource.data.index < getAfter(/databases/$(database)/documents/users/$(uid)/recipes/$(id)).data.ingredientCount
+          && request.resource.data.revision == getAfter(/databases/$(database)/documents/users/$(uid)/recipes/$(id)).data.revision;
+        allow delete: if owner(uid) && (!existsAfter(/databases/$(database)/documents/users/$(uid)/recipes/$(id))
+          || int(index) >= getAfter(/databases/$(database)/documents/users/$(uid)/recipes/$(id)).data.ingredientCount);
+      }
+    }
+    match /users/{uid}/favorites/{id} {
+      allow read, delete: if owner(uid);
+      allow create, update: if owner(uid)
+        && request.resource.data.keys().hasOnly(['recipeId'])
+        && request.resource.data.recipeId == id && text(id, 1, 128)
+        && existsAfter(/databases/$(database)/documents/users/$(uid)/recipes/$(id));
+    }
+    match /users/{uid}/weeks/{week} {
+      allow read, delete: if owner(uid);
+      allow create, update: if owner(uid) && monday(week)
+        && request.resource.data.keys().hasAll(['weekStart', 'slots'])
+        && request.resource.data.keys().hasOnly(['weekStart', 'slots'])
+        && request.resource.data.weekStart == week && slots(request.resource.data.slots);
+      match /items/{id} {
+        allow read, delete: if owner(uid);
+        allow create, update: if owner(uid) && monday(week)
+          && text(id, 1, 500) && shopping(request.resource.data);
+      }
+    }
+    // Everything else is denied, including collection-group reads across users.
+    match /{document=**} { allow read, write: if false; }
+  }
+}

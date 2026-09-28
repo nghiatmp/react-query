@@ -1,5 +1,6 @@
 "use client";
 
+import { useFavorites } from "@/features/auth/useFavorites";
 import { cn } from "@/lib/utils/cn";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -24,7 +25,7 @@ export function RecipeList({ onOpen, onCreate }: RecipeListProps) {
   const cuisine = useRecipePreferences((s) => s.cuisine);
   const viewMode = useRecipePreferences((s) => s.viewMode);
   const favoritesOnly = useRecipePreferences((s) => s.favoritesOnly);
-  const favoriteIds = useRecipePreferences((s) => s.favoriteIds);
+  const { ids: favoriteIds, pending: favoritesPending } = useFavorites();
   const setFavoritesOnly = useRecipePreferences((s) => s.setFavoritesOnly);
 
   // Truyền filter làm tham số -> cũng chính là phần động của query key.
@@ -38,7 +39,7 @@ export function RecipeList({ onOpen, onCreate }: RecipeListProps) {
   } = useRecipes({ search, cuisine });
 
   // 1) LOADING: lần đầu chưa có gì trong cache.
-  if (isPending) return <LoadingState label="Đang tải công thức..." />;
+  if (isPending || (favoritesOnly && favoritesPending)) return <LoadingState label="Đang tải công thức..." />;
 
   // 2) ERROR: query lỗi -> cho phép thử lại bằng refetch().
   if (isError) {
