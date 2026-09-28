@@ -10,7 +10,15 @@ import { useRecipe } from "../hooks/useRecipe";
 import { useRecipes } from "../hooks/useRecipes";
 import type { Recipe } from "../types/recipe";
 
-const authState = vi.hoisted(() => ({ ready: false, user: null }));
+const authState = vi.hoisted(() => ({
+  ready: false,
+  user: null,
+  configured: true,
+  busy: false,
+  error: null as string | null,
+  login: vi.fn(),
+  logout: vi.fn(),
+}));
 const recipe: Recipe = {
   id: "r1",
   name: "Mì ngon",
@@ -37,6 +45,7 @@ function withQueryClient(children: ReactNode) {
 describe("recipe mutation controls during auth resolution", () => {
   beforeEach(() => {
     authState.ready = false;
+    authState.error = null;
     vi.clearAllMocks();
     vi.mocked(useRecipes).mockReturnValue({
       data: [], isPending: false, isError: false, error: null, isFetching: false, refetch: vi.fn(),
@@ -65,5 +74,13 @@ describe("recipe mutation controls during auth resolution", () => {
   it("disables form submission", () => {
     withQueryClient(<RecipeForm submitLabel="Lưu thay đổi" isSubmitting={false} onSubmit={vi.fn()} onCancel={vi.fn()}/>);
     expect(screen.getByRole("button", { name: "Lưu thay đổi" })).toBeDisabled();
+  });
+
+  it("keeps mutation controls disabled and shows guidance after auth failure", () => {
+    authState.error = "Không đọc được phiên đăng nhập. Tải lại trang để thử lại.";
+    withQueryClient(<RecipesPage/>);
+
+    expect(screen.getByRole("alert")).toHaveTextContent(authState.error);
+    for (const button of screen.getAllByRole("button", { name: /Thêm công thức/ })) expect(button).toBeDisabled();
   });
 });

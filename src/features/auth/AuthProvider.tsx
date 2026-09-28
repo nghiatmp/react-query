@@ -16,14 +16,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const client = useQueryClient();
   useEffect(() => {
     if (!firebaseConfigured) return;
+    const clearPersonalQueries = () => {
+      void client.cancelQueries({ predicate: q => q.queryKey[0] === "personal" });
+      client.removeQueries({ predicate: q => q.queryKey[0] === "personal" });
+    };
     try {
       return onAuthStateChanged(getFirebase().auth, next => {
         // Drop personal caches on every identity transition, including logout.
-        void client.cancelQueries({ predicate: q => q.queryKey[0] === "personal" });
-        client.removeQueries({ predicate: q => q.queryKey[0] === "personal" });
-        setUser(next); setReady(true);
-      }, () => { setError("Không đọc được phiên đăng nhập. Tải lại trang để thử lại."); setReady(true); });
-    } catch { queueMicrotask(() => { setError("Cấu hình Firebase không hợp lệ. Kiểm tra cấu hình và tải lại trang."); setReady(true); }); }
+        clearPersonalQueries();
+        setUser(next); setError(null); setReady(true);
+      }, () => {
+        clearPersonalQueries();
+        setUser(null); setError("Không đọc được phiên đăng nhập. Tải lại trang để thử lại."); setReady(false);
+      });
+    } catch {
+      queueMicrotask(() => {
+        clearPersonalQueries();
+        setUser(null); setError("Cấu hình Firebase không hợp lệ. Kiểm tra cấu hình và tải lại trang."); setReady(false);
+      });
+    }
   }, [client]);
   async function action(login: boolean) {
     setBusy(true); setError(null);
