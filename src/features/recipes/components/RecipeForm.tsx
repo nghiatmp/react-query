@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
+import { useAuth } from "@/features/auth/AuthProvider";
 import { CUISINES, CUISINE_LABELS, recipeFormSchema } from "../schemas/recipeSchema";
 import type { Cuisine, Ingredient, RecipeFormValues } from "../types/recipe";
 
@@ -35,6 +36,7 @@ export function RecipeForm({
   onSubmit,
   onCancel,
 }: RecipeFormProps) {
+  const { ready: authReady } = useAuth();
   const [form, setForm] = useState<FormState>({
     name: defaultValues?.name ?? "",
     description: defaultValues?.description ?? "",
@@ -213,7 +215,7 @@ export function RecipeForm({
         <Button type="button" variant="secondary" onClick={onCancel}>
           Huỷ
         </Button>
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" disabled={isSubmitting || !authReady}>
           {isSubmitting ? "Đang lưu..." : submitLabel}
         </Button>
       </div>

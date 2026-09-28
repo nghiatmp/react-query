@@ -7,6 +7,7 @@ import { CUISINE_LABELS } from "../schemas/recipeSchema";
 import { useRecipe } from "../hooks/useRecipe";
 import { useDeleteRecipe } from "../hooks/useDeleteRecipe";
 import { useFavorites } from "@/features/auth/useFavorites";
+import { useAuth } from "@/features/auth/AuthProvider";
 import { Heart, Clock } from "lucide-react";
 
 interface RecipeDetailProps {
@@ -20,6 +21,7 @@ interface RecipeDetailProps {
  * Nhờ vậy detail có thể có cache/loading/error độc lập.
  */
 export function RecipeDetail({ recipeId, onEdit, onDeleted }: RecipeDetailProps) {
+  const { ready: authReady } = useAuth();
   // Query chi tiết: key ["recipes","detail", recipeId].
   const { data: recipe, isPending, isError, error, refetch } =
     useRecipe(recipeId);
@@ -93,11 +95,11 @@ export function RecipeDetail({ recipeId, onEdit, onDeleted }: RecipeDetailProps)
         <Button
           variant="danger"
           onClick={handleDelete}
-          disabled={deleteMutation.isPending}
+          disabled={deleteMutation.isPending || !authReady}
         >
           {deleteMutation.isPending ? "Đang xoá..." : "Xoá"}
         </Button>
-        <Button variant="secondary" onClick={onEdit}>
+        <Button variant="secondary" disabled={!authReady} onClick={onEdit}>
           Sửa
         </Button>
       </div>

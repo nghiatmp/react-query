@@ -14,11 +14,14 @@ import { useRecipePreferences } from "@/stores/recipePreferencesStore";
  */
 export function useDeleteRecipe() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, ready } = useAuth();
   const removeFavorite = useRecipePreferences((s) => s.removeFavorite);
 
   return useMutation({
-    mutationFn: (id: string) => user ? cloudDeleteRecipe(user.uid, id) : deleteRecipe(id),
+    mutationFn: (id: string) => {
+      if (!ready) throw new Error("Đang xác định tài khoản. Hãy thử lại.");
+      return user ? cloudDeleteRecipe(user.uid, id) : deleteRecipe(id);
+    },
 
     onSuccess: ({ id }) => {
       if (!user) removeFavorite(id);

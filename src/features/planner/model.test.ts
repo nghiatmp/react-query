@@ -23,6 +23,20 @@ describe("calendar and shopping behavior", () => {
     expect(edited[0]).toMatchObject({ name: "Trứng hữu cơ", checked: true, amount: "4 quả" });
     expect(shoppingFromWeek({ ...week, slots: { "0-breakfast": "deleted" } }, [recipe], [])).toEqual([]);
   });
+  it("adds changed ingredients without replacing previously edited rows", () => {
+    const week = { ...emptyWeek("2026-09-28"), slots: { "0-breakfast": "r1" } };
+    const first = shoppingFromWeek(week, [recipe], []);
+    const existing = first.map((item, index) => index === 0 ? { ...item, name: "Trứng hữu cơ", amount: "4 quả", checked: true } : item);
+    const changed = { ...recipe, ingredients: [{ name: " BỘT /  MÌ 🔥 ", amount: "500 G/袋" }, recipe.ingredients[1]] };
+    const missing = shoppingFromWeek(week, [changed], existing);
+
+    expect(missing).toHaveLength(1);
+    expect(missing[0]).toMatchObject({ name: "BỘT /  MÌ 🔥", amount: "500 G/袋", checked: false });
+    expect(existing[0]).toMatchObject({ name: "Trứng hữu cơ", amount: "4 quả", checked: true });
+    expect(shoppingFromWeek(week, [{ ...changed, ingredients: [{ name: "bột / mì 🔥", amount: "500 g/袋" }, recipe.ingredients[1]] }], [...existing, ...missing])).toEqual([]);
+    expect(missing[0].id).toMatch(/^[a-z0-9-]+$/);
+    expect(missing[0].id.length).toBeLessThan(100);
+  });
   it("persists slot add/replace/remove, prior-week copy, shopping edits and checked state across reloads", async () => {
     const week = "2026-09-28";
     await local.localChangeWeek(week, current => ({ ...current, slots: { "0-breakfast": "r1" } }));

@@ -38,6 +38,21 @@ export type Week = z.infer<typeof weekSchema>;
 export type ShoppingItem = z.infer<typeof itemSchema>;
 export const emptyWeek = (weekStart: string): Week => weekSchema.parse({ weekStart, slots: {} });
 
+function normalizedIdentity(value: string): string {
+  return value.normalize("NFKC").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function stableIdentity(value: string): string {
+  let first = 0x811c9dc5;
+  let second = 0x5f3759df;
+  for (let index = 0; index < value.length; index++) {
+    const code = value.charCodeAt(index);
+    first = Math.imul(first ^ code, 0x01000193);
+    second = Math.imul(second ^ code, 0x45d9f3b);
+  }
+  return `${(first >>> 0).toString(36)}${(second >>> 0).toString(36)}`;
+}
+
 /** One source per meal/ingredient; text quantities are never added or converted. */
 export function shoppingFromWeek(week: Week, recipes: Recipe[], existing: ShoppingItem[]): ShoppingItem[] {
   const seen = new Set(existing.map(i => i.id));
@@ -46,8 +61,10 @@ export function shoppingFromWeek(week: Week, recipes: Recipe[], existing: Shoppi
     const recipe = recipes.find(r => r.id === week.slots[key]);
     if (!recipe) continue;
     const [day, meal] = key.split("-");
+    const recipeIdentity = stableIdentity(recipe.id);
     recipe.ingredients.forEach((ingredient, index) => {
-      const id = `meal-${key}-${recipe.id}-${index}`;
+      const ingredientIdentity = stableIdentity(`${normalizedIdentity(ingredient.name)}\u0000${normalizedIdentity(ingredient.amount)}`);
+      const id = `meal-${key}-${recipeIdentity}-${index}-${ingredientIdentity}`;
       if (!seen.has(id)) generated.push(itemSchema.parse({
         id, ...ingredient, checked: false,
         source: `${DAYS[Number(day)]} · ${MEAL_LABELS[meal as Meal]} · ${recipe.name}`,

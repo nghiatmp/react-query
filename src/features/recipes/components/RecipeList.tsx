@@ -1,6 +1,7 @@
 "use client";
 
 import { useFavorites } from "@/features/auth/useFavorites";
+import { useAuth } from "@/features/auth/AuthProvider";
 import { cn } from "@/lib/utils/cn";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -21,6 +22,7 @@ interface RecipeListProps {
  * loading / error / empty / success.
  */
 export function RecipeList({ onOpen, onCreate }: RecipeListProps) {
+  const { ready: authReady } = useAuth();
   const search = useRecipePreferences((s) => s.search);
   const cuisine = useRecipePreferences((s) => s.cuisine);
   const viewMode = useRecipePreferences((s) => s.viewMode);
@@ -98,7 +100,7 @@ export function RecipeList({ onOpen, onCreate }: RecipeListProps) {
       <EmptyState
         title="Không có công thức nào"
         description="Thử đổi bộ lọc, hoặc thêm một công thức mới để bắt đầu."
-        action={<Button onClick={onCreate}>+ Thêm công thức</Button>}
+        action={<Button disabled={!authReady} onClick={onCreate}>+ Thêm công thức</Button>}
       />
     );
   }

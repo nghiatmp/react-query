@@ -12,10 +12,13 @@ import { recipeKeys, scopedRecipeKey } from "./recipeKeys";
  */
 export function useCreateRecipe() {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, ready } = useAuth();
 
   return useMutation({
-    mutationFn: (values: import("../types/recipe").RecipeFormValues) => user ? cloudCreateRecipe(user.uid, values) : createRecipe(values),
+    mutationFn: (values: import("../types/recipe").RecipeFormValues) => {
+      if (!ready) throw new Error("Đang xác định tài khoản. Hãy thử lại.");
+      return user ? cloudCreateRecipe(user.uid, values) : createRecipe(values);
+    },
     onSuccess: () => {
       // Đánh dấu tất cả query danh sách là "stale" -> React Query tự fetch lại.
       queryClient.invalidateQueries({ queryKey: scopedRecipeKey(user?.uid, recipeKeys.lists()) });
