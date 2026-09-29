@@ -8,7 +8,8 @@ import type { RecipeFilters } from "../types/recipe";
 /**
  * Query DANH SÁCH recipes theo filter.
  *
- * Query key = ["recipes", "list", filters].
+ * Query key demo = ["recipes", "list", filters]; tài khoản thêm prefix
+ * ["personal", uid].
  * => Khi `filters` đổi (search/cuisine khác), key đổi theo, React Query tự
  *    fetch lại và cache riêng cho từng bộ filter.
  */

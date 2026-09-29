@@ -22,7 +22,7 @@ interface RecipeDetailProps {
  */
 export function RecipeDetail({ recipeId, onEdit, onDeleted }: RecipeDetailProps) {
   const { ready: authReady, busy: authBusy } = useAuth();
-  // Query chi tiết: key ["recipes","detail", recipeId].
+  // Hook tự scope query key theo demo hoặc uid hiện tại.
   const { data: recipe, isPending, isError, error, refetch } =
     useRecipe(recipeId);
 

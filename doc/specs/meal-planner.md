@@ -2,9 +2,9 @@
 
 Tài liệu này ghi hợp đồng chức năng và những ranh giới lưu trữ cần giữ khi mở rộng dự án.
 
-- Tuần bắt đầu thứ Hai, 7 ngày × sáng/trưa/tối. Chọn, thay, gỡ món; lọc picker theo yêu thích; copy tuần trước với xác nhận nếu đích có món.
-- Shopping giữ nguyên `ingredients[].amount` dạng chuỗi. Mỗi nguyên liệu của mỗi bữa là một mục riêng, không tự cộng hay quy đổi đơn vị. Tạo thêm mục còn thiếu, không ghi đè mục đã chỉnh hoặc đã mua. Mục cũ giữ lại khi đổi thực đơn, người dùng có thể xóa.
-- Chưa đăng nhập: recipe demo RAM như trước; favorites cũ giữ nguyên; tuần/shopping lưu ở trình duyệt. Đăng nhập: Firestore riêng tài khoản, ban đầu rỗng. Nhập công thức demo và yêu thích là thao tác rõ ràng, không ghi đè. Không tự nhập tuần/shopping.
+- Tuần bắt đầu thứ Hai, 7 ngày × sáng/trưa/tối. Tuần mặc định lấy theo múi giờ trình duyệt; deep link có `?week=YYYY-MM-DD` hợp lệ được giữ nguyên. Chọn, thay, gỡ món; lọc picker theo yêu thích; copy tuần trước với xác nhận nếu đích có món.
+- Shopping giữ nguyên `ingredients[].amount` dạng chuỗi. Mỗi nguyên liệu của mỗi bữa là một mục riêng, không tự cộng hay quy đổi đơn vị. Định danh mục sinh tự động gồm bữa, công thức, lần xuất hiện, tên và định lượng đã chuẩn hóa: đổi nguyên liệu sẽ tạo mục còn thiếu mới, không ghi đè mục cũ đã chỉnh hoặc đã mua. Mục cũ giữ lại khi đổi thực đơn, người dùng có thể xóa.
+- Khi Auth đã xác nhận ẩn danh: recipe demo RAM như trước; favorites cũ giữ nguyên; tuần/shopping lưu ở trình duyệt. Trong lúc Auth đang khởi tạo, lỗi, đăng nhập hoặc đăng xuất, mọi thao tác ghi đều bị chặn để không ghi nhầm vào demo hay tài khoản cũ. Đăng nhập: Firestore riêng tài khoản, ban đầu rỗng. Nhập công thức demo và yêu thích là thao tác rõ ràng, không ghi đè. Không tự nhập tuần/shopping.
 - Query/mutation và cloud favorites do React Query quản lý theo uid; Zustand giữ preferences + favorites demo. Auth subscription duy nhất; refresh cloud khi focus và định kỳ. SSR demo luôn public demo.
 - Security Rules owner-only, giới hạn field/kiểu/độ dài; không deploy production trong task.
 

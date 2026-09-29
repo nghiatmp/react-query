@@ -7,7 +7,8 @@ import { recipeKeys, scopedRecipeKey } from "./recipeKeys";
 /**
  * Query CHI TIẾT một recipe theo id.
  *
- * Query key = ["recipes", "detail", id].
+ * Query key demo = ["recipes", "detail", id]; tài khoản thêm prefix
+ * ["personal", uid].
  *
  * `enabled: ready && !!id` -> query chỉ chạy khi có id (ví dụ: khi mở modal chi tiết).
  * Khi chưa chọn recipe nào (id rỗng/null) query nằm im, không gọi API thừa.

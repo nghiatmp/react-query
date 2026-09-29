@@ -47,4 +47,4 @@ npm run test:rules
 
 Security/adapter tests chạy emulator thật, gồm owner access, anonymous/cross-user deny, malformed schema, giao dịch 30 nguyên liệu, rollback, concurrent edits và Google credential giả. CI định nghĩa trong [ci.yml](.github/workflows/ci.yml).
 
-Hành vi và mô hình lưu trữ: [spec](doc/specs/meal-planner.md). Lệnh/kết quả và ảnh giao diện thật: [evidence](doc/evidence/meal-planner/evidence.md).
+Hành vi và mô hình lưu trữ: [spec](doc/specs/meal-planner.md). Ảnh giao diện thật: [evidence](doc/evidence/meal-planner/).
