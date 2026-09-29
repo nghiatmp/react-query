@@ -45,6 +45,7 @@ function withQueryClient(children: ReactNode) {
 describe("recipe mutation controls during auth resolution", () => {
   beforeEach(() => {
     authState.ready = false;
+    authState.busy = false;
     authState.error = null;
     vi.clearAllMocks();
     vi.mocked(useRecipes).mockReturnValue({
@@ -82,5 +83,25 @@ describe("recipe mutation controls during auth resolution", () => {
 
     expect(screen.getByRole("alert")).toHaveTextContent(authState.error);
     for (const button of screen.getAllByRole("button", { name: /Thêm công thức/ })) expect(button).toBeDisabled();
+  });
+
+  it("keeps every mutation control disabled while sign-in is pending", () => {
+    authState.ready = true;
+    authState.busy = true;
+
+    const page = withQueryClient(<RecipesPage/>);
+    for (const button of screen.getAllByRole("button", { name: /Thêm công thức/ })) expect(button).toBeDisabled();
+    page.unmount();
+
+    withQueryClient(<RecipeDetail recipeId="r1" onEdit={vi.fn()} onDeleted={vi.fn()}/>);
+    expect(screen.getByRole("button", { name: "Xoá" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Sửa" })).toBeDisabled();
+  });
+
+  it("enables anonymous mutation controls after auth settles", () => {
+    authState.ready = true;
+    withQueryClient(<RecipesPage/>);
+
+    for (const button of screen.getAllByRole("button", { name: /Thêm công thức/ })) expect(button).toBeEnabled();
   });
 });

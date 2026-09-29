@@ -9,7 +9,7 @@ import { useDeleteRecipe } from "./useDeleteRecipe";
 import { useUpdateRecipe } from "./useUpdateRecipe";
 import type { Recipe, RecipeFormValues } from "../types/recipe";
 
-const authState = vi.hoisted((): { ready: boolean; user: { uid: string } | null } => ({ ready: false, user: null }));
+const authState = vi.hoisted((): { ready: boolean; busy: boolean; user: { uid: string } | null } => ({ ready: false, busy: false, user: null }));
 
 vi.mock("@/features/auth/AuthProvider", () => ({ useAuth: () => authState }));
 vi.mock("../api/recipeApi", () => ({ createRecipe: vi.fn(), updateRecipe: vi.fn(), deleteRecipe: vi.fn() }));
@@ -34,8 +34,32 @@ function wrapper() {
 describe("recipe mutation auth routing", () => {
   beforeEach(() => {
     authState.ready = false;
+    authState.busy = false;
     authState.user = null;
     vi.clearAllMocks();
+  });
+
+  it("rejects every mutation while sign-in is pending", async () => {
+    authState.ready = true;
+    authState.busy = true;
+    const { result } = renderHook(() => ({ create: useCreateRecipe(), update: useUpdateRecipe(), remove: useDeleteRecipe() }), { wrapper: wrapper() });
+
+    let errors: unknown[] = [];
+    await act(async () => {
+      errors = await Promise.all([
+        result.current.create.mutateAsync(values).catch(error => error),
+        result.current.update.mutateAsync({ id: "r1", values }).catch(error => error),
+        result.current.remove.mutateAsync("r1").catch(error => error),
+      ]);
+    });
+
+    for (const error of errors) expect(error).toMatchObject({ message: "Đang xác định tài khoản. Hãy thử lại." });
+    expect(createRecipe).not.toHaveBeenCalled();
+    expect(updateRecipe).not.toHaveBeenCalled();
+    expect(deleteRecipe).not.toHaveBeenCalled();
+    expect(cloudCreateRecipe).not.toHaveBeenCalled();
+    expect(cloudUpdateRecipe).not.toHaveBeenCalled();
+    expect(cloudDeleteRecipe).not.toHaveBeenCalled();
   });
 
   it("rejects create, update, and delete while auth is unresolved", async () => {

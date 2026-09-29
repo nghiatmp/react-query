@@ -12,11 +12,11 @@ import { recipeKeys, scopedRecipeKey } from "./recipeKeys";
  */
 export function useCreateRecipe() {
   const queryClient = useQueryClient();
-  const { user, ready } = useAuth();
+  const { user, ready, busy } = useAuth();
 
   return useMutation({
     mutationFn: (values: import("../types/recipe").RecipeFormValues) => {
-      if (!ready) throw new Error("Đang xác định tài khoản. Hãy thử lại.");
+      if (!ready || busy) throw new Error("Đang xác định tài khoản. Hãy thử lại.");
       return user ? cloudCreateRecipe(user.uid, values) : createRecipe(values);
     },
     onSuccess: () => {

@@ -33,13 +33,13 @@ export function RecipesPage() {
   >(null);
 
   const favoriteCount = useFavorites().ids.length;
-  const { ready: authReady } = useAuth();
+  const { ready: authReady, busy: authBusy } = useAuth();
 
   return (
     <AppShell>
       <header className="mb-8 flex flex-wrap items-end justify-between gap-5">
         <div><p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">Một chút cảm hứng cho bữa cơm nhà</p><h1 className="text-4xl sm:text-5xl">Nấu điều mình thích.</h1><p className="mt-3 text-sm text-muted-foreground">Lưu công thức ngon, lên thực đơn và chuẩn bị cho tuần mới.</p></div>
-        <div className="flex items-center gap-3">{favoriteCount > 0 && <span className="text-sm text-primary">♥ {favoriteCount} yêu thích</span>}<Button disabled={!authReady} onClick={() => setFormState({ mode: "create" })}><Plus size={17} aria-hidden="true"/>Thêm công thức</Button></div>
+        <div className="flex items-center gap-3">{favoriteCount > 0 && <span className="text-sm text-primary">♥ {favoriteCount} yêu thích</span>}<Button disabled={!authReady || authBusy} onClick={() => setFormState({ mode: "create" })}><Plus size={17} aria-hidden="true"/>Thêm công thức</Button></div>
       </header>
       <div className="mb-8 rounded-2xl border bg-card p-5"><RecipeFilters/></div>
 

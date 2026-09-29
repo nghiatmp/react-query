@@ -14,11 +14,11 @@ import type { Recipe, RecipeFormValues } from "../types/recipe";
  */
 export function useUpdateRecipe() {
   const queryClient = useQueryClient();
-  const { user, ready } = useAuth();
+  const { user, ready, busy } = useAuth();
 
   return useMutation({
     mutationFn: ({ id, values }: { id: string; values: RecipeFormValues }) => {
-      if (!ready) throw new Error("Đang xác định tài khoản. Hãy thử lại.");
+      if (!ready || busy) throw new Error("Đang xác định tài khoản. Hãy thử lại.");
       return user ? cloudUpdateRecipe(user.uid, id, values) : updateRecipe(id, values);
     },
 

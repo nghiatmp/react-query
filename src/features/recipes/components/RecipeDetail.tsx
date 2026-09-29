@@ -21,7 +21,7 @@ interface RecipeDetailProps {
  * Nhờ vậy detail có thể có cache/loading/error độc lập.
  */
 export function RecipeDetail({ recipeId, onEdit, onDeleted }: RecipeDetailProps) {
-  const { ready: authReady } = useAuth();
+  const { ready: authReady, busy: authBusy } = useAuth();
   // Query chi tiết: key ["recipes","detail", recipeId].
   const { data: recipe, isPending, isError, error, refetch } =
     useRecipe(recipeId);
@@ -95,11 +95,11 @@ export function RecipeDetail({ recipeId, onEdit, onDeleted }: RecipeDetailProps)
         <Button
           variant="danger"
           onClick={handleDelete}
-          disabled={deleteMutation.isPending || !authReady}
+          disabled={deleteMutation.isPending || !authReady || authBusy}
         >
           {deleteMutation.isPending ? "Đang xoá..." : "Xoá"}
         </Button>
-        <Button variant="secondary" disabled={!authReady} onClick={onEdit}>
+        <Button variant="secondary" disabled={!authReady || authBusy} onClick={onEdit}>
           Sửa
         </Button>
       </div>

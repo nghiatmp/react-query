@@ -22,7 +22,7 @@ interface RecipeListProps {
  * loading / error / empty / success.
  */
 export function RecipeList({ onOpen, onCreate }: RecipeListProps) {
-  const { ready: authReady } = useAuth();
+  const { ready: authReady, busy: authBusy } = useAuth();
   const search = useRecipePreferences((s) => s.search);
   const cuisine = useRecipePreferences((s) => s.cuisine);
   const viewMode = useRecipePreferences((s) => s.viewMode);
@@ -100,7 +100,7 @@ export function RecipeList({ onOpen, onCreate }: RecipeListProps) {
       <EmptyState
         title="Không có công thức nào"
         description="Thử đổi bộ lọc, hoặc thêm một công thức mới để bắt đầu."
-        action={<Button disabled={!authReady} onClick={onCreate}>+ Thêm công thức</Button>}
+        action={<Button disabled={!authReady || authBusy} onClick={onCreate}>+ Thêm công thức</Button>}
       />
     );
   }

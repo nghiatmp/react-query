@@ -36,7 +36,7 @@ export function RecipeForm({
   onSubmit,
   onCancel,
 }: RecipeFormProps) {
-  const { ready: authReady } = useAuth();
+  const { ready: authReady, busy: authBusy } = useAuth();
   const [form, setForm] = useState<FormState>({
     name: defaultValues?.name ?? "",
     description: defaultValues?.description ?? "",
@@ -215,7 +215,7 @@ export function RecipeForm({
         <Button type="button" variant="secondary" onClick={onCancel}>
           Huỷ
         </Button>
-        <Button type="submit" disabled={isSubmitting || !authReady}>
+        <Button type="submit" disabled={isSubmitting || !authReady || authBusy}>
           {isSubmitting ? "Đang lưu..." : submitLabel}
         </Button>
       </div>
