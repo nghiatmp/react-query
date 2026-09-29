@@ -2,7 +2,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRecipePreferences } from "@/stores/recipePreferencesStore";
 import { useAuth } from "./AuthProvider";
-import { cloudFavorites, cloudToggleFavorite } from "@/lib/firebase/repository";
+import { cloudFavorites, cloudSetFavorite } from "@/lib/firebase/repository";
 export function useFavorites() {
   const { user, ready, busy } = useAuth(); const client = useQueryClient();
   const localIds = useRecipePreferences(s => s.favoriteIds);
@@ -10,18 +10,19 @@ export function useFavorites() {
   const key = ["personal", user?.uid, "favorites"];
   const query = useQuery({ queryKey: key, queryFn: () => cloudFavorites(user!.uid), enabled: ready && !!user, refetchInterval: user ? 30000 : false, refetchOnWindowFocus: !!user });
   const mutation = useMutation({
-    mutationFn: (id: string) => {
+    mutationFn: ({ id, favorite }: { id: string; favorite: boolean }) => {
       if (!ready || busy || !user) throw new Error("Đang xác định tài khoản. Hãy thử lại.");
-      return cloudToggleFavorite(user.uid, id);
+      return cloudSetFavorite(user.uid, id, favorite);
     },
     onSuccess: () => client.invalidateQueries({ queryKey: key }),
   });
+  const ids = user ? query.data ?? [] : localIds;
   const disabled = !ready || busy || (!!user && (query.isPending || mutation.isPending));
   return {
-    ids: user ? query.data ?? [] : localIds,
+    ids,
     toggle: (id: string) => {
       if (!ready || busy) return;
-      if (user) mutation.mutate(id);
+      if (user) mutation.mutate({ id, favorite: !ids.includes(id) });
       else localToggle(id);
     },
     disabled,

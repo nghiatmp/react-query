@@ -24,7 +24,7 @@ vi.mock("./localRepository", () => ({
 }));
 vi.mock("@/lib/firebase/repository", () => ({
   cloudFavorites: vi.fn().mockResolvedValue([]),
-  cloudToggleFavorite: vi.fn(),
+  cloudSetFavorite: vi.fn(),
   cloudChangeWeek: vi.fn(),
   cloudAddItems: vi.fn(),
   cloudEditItem: vi.fn(),
@@ -55,6 +55,7 @@ describe("planner mutation auth routing", () => {
     authState.busy = false;
     authState.user = null;
     vi.clearAllMocks();
+    vi.mocked(cloud.cloudFavorites).mockResolvedValue([]);
   });
 
   it("blocks local writes while anonymous sign-in is pending", async () => {
@@ -82,7 +83,7 @@ describe("planner mutation auth routing", () => {
     expect(cloud.cloudAddItems).not.toHaveBeenCalled();
     expect(cloud.cloudEditItem).not.toHaveBeenCalled();
     expect(cloud.cloudRemoveItem).not.toHaveBeenCalled();
-    expect(cloud.cloudToggleFavorite).not.toHaveBeenCalled();
+    expect(cloud.cloudSetFavorite).not.toHaveBeenCalled();
   });
 
   it("blocks cloud writes while sign-out is pending", async () => {
@@ -103,7 +104,7 @@ describe("planner mutation auth routing", () => {
     expect(cloud.cloudAddItems).not.toHaveBeenCalled();
     expect(cloud.cloudEditItem).not.toHaveBeenCalled();
     expect(cloud.cloudRemoveItem).not.toHaveBeenCalled();
-    expect(cloud.cloudToggleFavorite).not.toHaveBeenCalled();
+    expect(cloud.cloudSetFavorite).not.toHaveBeenCalled();
   });
 
   it("preserves local writes after anonymous auth settles", async () => {
@@ -124,6 +125,6 @@ describe("planner mutation auth routing", () => {
     expect(localToggle).toHaveBeenCalledWith("r1");
     expect(cloud.cloudChangeWeek).not.toHaveBeenCalled();
     expect(cloud.cloudAddItems).not.toHaveBeenCalled();
-    expect(cloud.cloudToggleFavorite).not.toHaveBeenCalled();
+    expect(cloud.cloudSetFavorite).not.toHaveBeenCalled();
   });
 });

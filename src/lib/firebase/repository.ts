@@ -1,4 +1,4 @@
-import { collection, doc, getDoc, getDocs, runTransaction, deleteDoc, updateDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, runTransaction, deleteDoc, setDoc, updateDoc } from "firebase/firestore";
 import { getFirebase } from "./client";
 import { readStoredRecipe, createStoredRecipe, updateStoredRecipe, deleteStoredRecipe, importStoredRecipe } from "./recipeStorage";
 import type { RecipeFilters, RecipeFormValues } from "@/features/recipes/types/recipe";
@@ -30,13 +30,10 @@ export async function cloudFavorites(uid: string): Promise<string[]> {
   const snapshot = await getDocs(collection(getFirebase().db, `${root(uid)}/favorites`));
   return snapshot.docs.map(d => d.id);
 }
-export async function cloudToggleFavorite(uid: string, id: string) {
-  await runTransaction(getFirebase().db, async tx => {
-    const target = ref(uid, `favorites/${id}`);
-    const old = await tx.get(target);
-    if (old.exists()) tx.delete(target);
-    else tx.set(target, { recipeId: id });
-  });
+export async function cloudSetFavorite(uid: string, id: string, favorite: boolean) {
+  const target = ref(uid, `favorites/${id}`);
+  if (favorite) await setDoc(target, { recipeId: id });
+  else await deleteDoc(target);
 }
 /** Explicit non-destructive demo import, resumable after partial failure. */
 export async function importDemo(uid: string, recipes: unknown[], favoriteIds: string[]) {
