@@ -15,8 +15,9 @@ import type { ReactNode } from "react";
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname(); const auth = useAuth(); const favorites = useFavorites(); const client = useQueryClient();
   const importer = useMutation({ mutationFn: async () => {
-    if (!auth.user) throw new Error("Cần đăng nhập");
-    await importDemo(auth.user.uid, await fetchRecipes({ search: "", cuisine: "all" }), useRecipePreferences.getState().favoriteIds);
+    const user = auth.user;
+    if (!auth.ready || auth.busy || !user) throw new Error("Đang xác định tài khoản. Hãy thử lại.");
+    await importDemo(user.uid, await fetchRecipes({ search: "", cuisine: "all" }), useRecipePreferences.getState().favoriteIds);
   }, onSuccess: () => client.invalidateQueries({ queryKey: ["personal", auth.user?.uid] }) });
   const links = [{ href: "/", label: "Công thức", icon: BookOpen }, { href: "/meal-plan", label: "Thực đơn", icon: CalendarDays }, { href: "/shopping", label: "Đi chợ", icon: ShoppingBasket }];
   return <>
@@ -30,7 +31,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     </header>
     <div className="mx-auto max-w-7xl px-4 pt-4 sm:px-8">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-muted-foreground">
-        {auth.user ? <><Cloud aria-hidden="true" size={15}/><span>{emulatorMode ? "Tài khoản thử nghiệm · lưu trên Firebase Emulator" : "Không gian riêng · lưu trên Firebase"}</span><Button variant="ghost" size="sm" disabled={importer.isPending} onClick={() => { if (window.confirm("Nhập công thức demo và yêu thích cục bộ vào tài khoản? Công thức đã có sẽ được giữ nguyên; dữ liệu demo vẫn được giữ trên thiết bị.")) importer.mutate(); }}>{importer.isPending ? "Đang nhập…" : "Nhập công thức demo & yêu thích"}</Button></> : <><HardDrive aria-hidden="true" size={15}/><span>Bản demo · thực đơn, đi chợ và yêu thích chỉ lưu trên trình duyệt{!auth.configured && " · chưa cấu hình đăng nhập"}</span></>}
+        {auth.user ? <><Cloud aria-hidden="true" size={15}/><span>{emulatorMode ? "Tài khoản thử nghiệm · lưu trên Firebase Emulator" : "Không gian riêng · lưu trên Firebase"}</span><Button variant="ghost" size="sm" disabled={!auth.ready || auth.busy || importer.isPending} onClick={() => { if (window.confirm("Nhập công thức demo và yêu thích cục bộ vào tài khoản? Công thức đã có sẽ được giữ nguyên; dữ liệu demo vẫn được giữ trên thiết bị.")) importer.mutate(); }}>{importer.isPending ? "Đang nhập…" : "Nhập công thức demo & yêu thích"}</Button></> : <><HardDrive aria-hidden="true" size={15}/><span>Bản demo · thực đơn, đi chợ và yêu thích chỉ lưu trên trình duyệt{!auth.configured && " · chưa cấu hình đăng nhập"}</span></>}
       </div>
       {importer.isSuccess && <p role="status" className="mt-2 text-sm text-primary">Đã nhập công thức và yêu thích. Dữ liệu cũ được giữ nguyên.</p>}
       {(auth.error || importer.error || favorites.error) && <div role="alert" className="mt-3 rounded-xl border border-destructive/30 bg-card p-3 text-sm text-destructive">{auth.error || (importer.error ? "Nhập dữ liệu chưa hoàn tất. Hãy thử lại, các mục đã nhập sẽ được giữ." : "Không tải/lưu được yêu thích.")} {favorites.error && <Button variant="secondary" onClick={() => void favorites.retry()}>Thử tải lại</Button>}</div>}
