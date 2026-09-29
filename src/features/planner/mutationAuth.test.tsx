@@ -110,7 +110,7 @@ describe("planner mutation auth routing", () => {
   it("preserves local writes after anonymous auth settles", async () => {
     authState.ready = true;
     vi.mocked(local.localChangeWeek).mockResolvedValue(emptyWeek(weekStart));
-    vi.mocked(local.localAddItems).mockResolvedValue(undefined);
+    vi.mocked(local.localAddItems).mockResolvedValue(1);
     const { result } = renderMutationHooks();
 
     await act(async () => {
