@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test:rules": "vitest run --config vitest.firebase.config.ts",
     "test:emulators": "firebase emulators:exec --only auth,firestore --project demo-meal-planner \"npm run test:rules\""
   },
