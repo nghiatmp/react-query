@@ -5,6 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { makeQueryClient } from "@/lib/react-query/queryClient";
 import { useRecipePreferences } from "@/stores/recipePreferencesStore";
+import { AuthProvider } from "@/features/auth/AuthProvider";
 import type { ReactNode } from "react";
 
 /**
@@ -32,7 +33,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <AuthProvider>{children}</AuthProvider>
       {/* Devtools: mở panel để quan sát cache, query key, trạng thái... rất hữu ích khi học */}
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

@@ -1,22 +1,64 @@
 @import "tailwindcss";
 
+:root {
+  --background: #f8f6ef;
+  --foreground: #293126;
+  --card: #fffef9;
+  --card-foreground: #293126;
+  --primary: #44513a;
+  --primary-foreground: #fffef9;
+  --secondary: #eeeee3;
+  --secondary-foreground: #44513a;
+  --muted: #eeeee3;
+  --muted-foreground: #626858;
+  --accent: #e5e9dc;
+  --accent-foreground: #34402c;
+  --destructive: #ad332b;
+  --border: #d6d8ca;
+  --input: #a7ac9b;
+  --ring: #596d41;
+  --radius: 0.75rem;
+}
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+@layer base {
+  * { border-color: var(--border); }
+  body { background: var(--background); color: var(--foreground); font-family: var(--font-geist-sans), system-ui, sans-serif; }
+  button, a, input, select { touch-action: manipulation; }
+  button:not(:disabled), a { cursor: pointer; }
+  button, input, select { min-height: 44px; }
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+  input, select, textarea { background: var(--card); }
+  h1, .display-heading { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
+  ::selection { background: var(--accent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 
-/* Style thẻ HTML tự viết PHẢI nằm trong @layer base.
-   CSS ngoài mọi layer sẽ thắng utility bất kể specificity, nên nếu để trần
-   thì class Tailwind trên <body> (bg-*, text-*, min-h-*) sẽ không có tác dụng. */
-@layer base {
-  /* App dùng theme sáng cố định cho đơn giản khi học.
-     Nền là gradient ấm rất nhẹ (cam/hồng) hợp chủ đề nấu ăn. */
-  body {
-    background:
-      radial-gradient(1200px 600px at 100% -10%, #fff1e6 0%, transparent 55%),
-      radial-gradient(1000px 500px at -10% 0%, #ffe9ef 0%, transparent 50%),
-      #f8fafc;
-    color: #0f172a;
-    font-family: var(--font-geist-sans), system-ui, Arial, sans-serif;
-  }
-}
+.shopping-progress { appearance: none; overflow: hidden; border: 0; border-radius: 999px; background: #ffffff33; }
+.shopping-progress::-webkit-progress-bar { background: #ffffff33; }
+.shopping-progress::-webkit-progress-value { border-radius: 999px; background: #e4e9da; }
+.shopping-progress::-moz-progress-bar { border-radius: 999px; background: #e4e9da; }

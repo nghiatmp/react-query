@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bếp nhà
 
-## Getting Started
+Ứng dụng công thức, thực đơn tuần và danh sách đi chợ. Next.js App Router, React Query, Zustand, Zod, shadcn/ui và Firebase.
 
-First, run the development server:
+## Chạy local
+
+Yêu cầu Node 22 hoặc 24 và Java 21 cho Firebase Emulator Suite. CI dùng Node 24 / Java 21.
 
 ```bash
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Không có cấu hình Firebase: công thức demo tiếp tục dùng API RAM của dự án. Yêu thích, thực đơn và danh sách đi chợ demo lưu trên trình duyệt; công thức demo đã sửa có thể mất khi server khởi động lại. `/ssr-demo` luôn minh họa dữ liệu public từ API này.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Firebase Emulator Suite
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx firebase emulators:start --only auth,firestore --project demo-meal-planner
+NEXT_PUBLIC_FIREBASE_EMULATORS=true npm run dev
+```
 
-## Learn More
+Firestore: `127.0.0.1:8080`; Auth: `127.0.0.1:9099`; Emulator UI: `127.0.0.1:4000`. Chỉ chạy trên máy local. Đăng nhập Google mở màn hình tài khoản giả của Auth emulator; không dùng tài khoản thật.
 
-To learn more about Next.js, take a look at the following resources:
+Khi `NEXT_PUBLIC_FIREBASE_EMULATORS=true`, SDK **luôn** dùng project `demo-meal-planner` và config giả, bỏ qua toàn bộ config production. Script test cũng chỉ định project demo. Không dùng CLI deploy trong luồng kiểm chứng này. Dữ liệu emulator mất khi tắt nếu không chủ động export.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Cấu hình production
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Copy `.env.example` thành `.env.local` (git bỏ qua), điền bốn biến public Web App config: `NEXT_PUBLIC_FIREBASE_API_KEY`, `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`, `NEXT_PUBLIC_FIREBASE_PROJECT_ID`, `NEXT_PUBLIC_FIREBASE_APP_ID`. Đặt `NEXT_PUBLIC_FIREBASE_EMULATORS=false` và restart/rebuild Next khi chủ động dùng production. Không lưu service-account key vào client hoặc git.
 
-## Deploy on Vercel
+Đã nhận Web App config của `foodsnap-ef6b5` riêng ngoài git. Probe chỉ đọc: Auth project config và Google auth URI trả HTTP 200; đọc Firestore không đăng nhập trả HTTP 403. Đây chưa phải kiểm chứng đăng nhập/dữ liệu production. Cần chủ dự án xác nhận Firestore database `(default)`, Rules owner-only tương ứng schema mới và authorized domains của môi trường triển khai. Deploy Rules, thay provider và ghi dữ liệu production cần quyền riêng theo project; task này chưa thực hiện các thao tác đó. `databaseURL` Realtime Database không dùng; Analytics không được yêu cầu.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Sau đăng nhập, dữ liệu tài khoản tách khỏi demo. Nút **Nhập công thức demo & yêu thích** cần xác nhận; chỉ thêm công thức còn thiếu và thêm yêu thích, giữ dữ liệu đã sửa trên cloud và favorites cục bộ. Tuần và giỏ demo không tự nhập. React Query refetch cloud khi focus và mỗi 30 giây ở màn hình đang hoạt động; không có Firestore snapshot subscription song song.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Kiểm chứng
+
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build
+# Tự bật/tắt emulator riêng khi các cổng chưa được sử dụng:
+npm run test:emulators
+# Khi Auth + Firestore emulator demo đã chạy:
+npm run test:rules
+```
+
+Security/adapter tests chạy emulator thật, gồm owner access, anonymous/cross-user deny, malformed schema, giao dịch 30 nguyên liệu, rollback, concurrent edits và Google credential giả. CI định nghĩa trong [ci.yml](.github/workflows/ci.yml).
+
+Hành vi và mô hình lưu trữ: [spec](doc/specs/meal-planner.md). Ảnh giao diện thật: [evidence](doc/evidence/meal-planner/).

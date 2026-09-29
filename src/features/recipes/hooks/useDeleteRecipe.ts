@@ -1,6 +1,8 @@
+import { useAuth } from "@/features/auth/AuthProvider";
+import { cloudDeleteRecipe } from "@/lib/firebase/repository";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteRecipe } from "../api/recipeApi";
-import { recipeKeys } from "./recipeKeys";
+import { recipeKeys, scopedRecipeKey } from "./recipeKeys";
 import { useRecipePreferences } from "@/stores/recipePreferencesStore";
 
 /**
@@ -12,15 +14,20 @@ import { useRecipePreferences } from "@/stores/recipePreferencesStore";
  */
 export function useDeleteRecipe() {
   const queryClient = useQueryClient();
+  const { user, ready, busy } = useAuth();
   const removeFavorite = useRecipePreferences((s) => s.removeFavorite);
 
   return useMutation({
-    mutationFn: (id: string) => deleteRecipe(id),
+    mutationFn: (id: string) => {
+      if (!ready || busy) throw new Error("Đang xác định tài khoản. Hãy thử lại.");
+      return user ? cloudDeleteRecipe(user.uid, id) : deleteRecipe(id);
+    },
 
     onSuccess: ({ id }) => {
-      removeFavorite(id);
-      queryClient.removeQueries({ queryKey: recipeKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: recipeKeys.lists() });
+      if (!user) removeFavorite(id);
+      if (user) void queryClient.invalidateQueries({ queryKey: ["personal", user.uid, "favorites"] });
+      queryClient.removeQueries({ queryKey: scopedRecipeKey(user?.uid, recipeKeys.detail(id)) });
+      queryClient.invalidateQueries({ queryKey: scopedRecipeKey(user?.uid, recipeKeys.lists()) });
     },
   });
 }

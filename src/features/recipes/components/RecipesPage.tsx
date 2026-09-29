@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { AppShell } from "@/components/AppShell";
+import { useFavorites } from "@/features/auth/useFavorites";
+import { useAuth } from "@/features/auth/AuthProvider";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -12,7 +15,6 @@ import { RecipeForm } from "./RecipeForm";
 import { useRecipe } from "../hooks/useRecipe";
 import { useCreateRecipe } from "../hooks/useCreateRecipe";
 import { useUpdateRecipe } from "../hooks/useUpdateRecipe";
-import { useRecipePreferences } from "@/stores/recipePreferencesStore";
 import type { RecipeFormValues } from "../types/recipe";
 
 /**
@@ -30,46 +32,16 @@ export function RecipesPage() {
     { mode: "create" } | { mode: "edit"; id: string } | null
   >(null);
 
-  const favoriteCount = useRecipePreferences((s) => s.favoriteIds.length);
+  const favoriteCount = useFavorites().ids.length;
+  const { ready: authReady, busy: authBusy } = useAuth();
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
-      <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-rose-500 text-2xl shadow-lg shadow-orange-200">
-            🍳
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              Recipe Planner
-            </h1>
-            <p className="text-sm text-slate-500">
-              Học React Query, Zustand & Zod qua ví dụ thực tế.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {favoriteCount > 0 && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-3 py-1.5 text-sm font-medium text-rose-600 ring-1 ring-rose-100">
-              ♥ {favoriteCount} yêu thích
-            </span>
-          )}
-          <Link
-            href="/ssr-demo"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-800"
-          >
-            SSR demo →
-          </Link>
-          <Button onClick={() => setFormState({ mode: "create" })}>
-            + Thêm công thức
-          </Button>
-        </div>
+    <AppShell>
+      <header className="mb-8 flex flex-wrap items-end justify-between gap-5">
+        <div><p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">Một chút cảm hứng cho bữa cơm nhà</p><h1 className="text-4xl sm:text-5xl">Nấu điều mình thích.</h1><p className="mt-3 text-sm text-muted-foreground">Lưu công thức ngon, lên thực đơn và chuẩn bị cho tuần mới.</p></div>
+        <div className="flex items-center gap-3">{favoriteCount > 0 && <span className="text-sm text-primary">♥ {favoriteCount} yêu thích</span>}<Button disabled={!authReady || authBusy} onClick={() => setFormState({ mode: "create" })}><Plus size={17} aria-hidden="true"/>Thêm công thức</Button></div>
       </header>
-
-      <div className="mb-8 rounded-2xl border border-slate-200/70 bg-white/70 p-4 shadow-sm backdrop-blur">
-        <RecipeFilters />
-      </div>
+      <div className="mb-8 rounded-2xl border bg-card p-5"><RecipeFilters/></div>
 
       <RecipeList
         onOpen={(id) => setDetailId(id)}
@@ -114,7 +86,7 @@ export function RecipesPage() {
           <EditRecipeForm id={formState.id} onDone={() => setFormState(null)} />
         )}
       </Modal>
-    </div>
+    </AppShell>
   );
 }
 

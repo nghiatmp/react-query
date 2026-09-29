@@ -6,13 +6,13 @@ import type { RecipeFilters } from "../types/recipe";
  * Gom toàn bộ query key về một nơi để tránh gõ tay ["recipes"] rải rác
  * (dễ sai chính tả -> invalidate không trúng cache).
  *
- * Cấu trúc key phân cấp:
- *   ["recipes"]                     -> gốc của mọi thứ liên quan recipe
- *   ["recipes", "list", filters]    -> danh sách theo filter cụ thể
- *   ["recipes", "detail", id]       -> chi tiết theo id
+ * Cấu trúc key phân cấp cho demo:
+ *   ["recipes"]                     -> gốc của mọi recipe demo
+ *   ["recipes", "list", filters]    -> danh sách demo theo filter cụ thể
+ *   ["recipes", "detail", id]       -> chi tiết demo theo id
  *
- * Nhờ phân cấp, gọi invalidateQueries({ queryKey: ["recipes"] }) sẽ
- * làm mới CẢ list lẫn detail cùng lúc.
+ * Dữ liệu tài khoản thêm prefix ["personal", uid] vào cùng cấu trúc để cache
+ * của từng người dùng không trộn với demo hoặc với tài khoản khác.
  */
 export const recipeKeys = {
   all: ["recipes"] as const,
@@ -23,3 +23,5 @@ export const recipeKeys = {
   details: () => [...recipeKeys.all, "detail"] as const,
   detail: (id: string) => [...recipeKeys.details(), id] as const,
 };
+
+export const scopedRecipeKey = (uid: string | undefined, key: readonly unknown[]) => uid ? ["personal", uid, ...key] : key;

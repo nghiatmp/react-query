@@ -1,4 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { render as renderUI, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RecipeList } from "./RecipeList";
@@ -11,6 +13,10 @@ vi.mock("../hooks/useRecipes", () => ({
 }));
 
 const mockedUseRecipes = vi.mocked(useRecipes);
+function render(children: ReactNode) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return renderUI(<QueryClientProvider client={client}>{children}</QueryClientProvider>);
+}
 
 const recipes: Recipe[] = [
   {

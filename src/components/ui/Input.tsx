@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils/cn";
-import type { InputHTMLAttributes } from "react";
+import { useId, type InputHTMLAttributes } from "react";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -7,24 +7,28 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export function Input({ label, error, className, id, ...props }: InputProps) {
+  const generatedId = useId();
+  const fieldId = id ?? generatedId;
   return (
     <div className="flex flex-col gap-1">
       {label && (
-        <label htmlFor={id} className="text-sm font-medium text-slate-700">
+        <label htmlFor={fieldId} className="text-sm font-medium text-foreground">
           {label}
         </label>
       )}
       <input
-        id={id}
+        id={fieldId}
+        aria-invalid={!!error || undefined}
+        aria-describedby={error ? `${fieldId}-error` : undefined}
         className={cn(
-          "rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500",
-          error && "border-red-500 focus:border-red-500 focus:ring-red-500",
+          "min-h-11 w-full rounded-xl border bg-card px-3 py-2 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-ring/30 disabled:opacity-60",
+          error && "border-destructive focus:border-destructive",
           className,
         )}
         {...props}
       />
       {/* Hiển thị lỗi validate từ Zod (nếu có) */}
-      {error && <span className="text-xs text-red-600">{error}</span>}
+      {error && <span id={`${fieldId}-error`} className="text-xs text-destructive">{error}</span>}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Utensils } from "lucide-react";
 
 interface EmptyStateProps {
   title?: string;
@@ -14,9 +15,9 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
-      <div className="text-4xl">🍽️</div>
-      <h3 className="text-base font-semibold text-gray-800">{title}</h3>
-      <p className="max-w-sm text-sm text-gray-500">{description}</p>
+      <div className="mb-2 flex size-16 items-center justify-center rounded-full bg-accent text-primary"><Utensils size={26} aria-hidden="true"/></div>
+      <h3 className="display-heading text-2xl">{title}</h3>
+      <p className="max-w-sm text-sm leading-6 text-muted-foreground">{description}</p>
       {action && <div className="mt-2">{action}</div>}
     </div>
   );

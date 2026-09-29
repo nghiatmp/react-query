@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { CUISINES, CUISINE_LABELS } from "../schemas/recipeSchema";
 import { useDebounce } from "@/lib/utils/useDebounce";
 import { useRecipePreferences } from "@/stores/recipePreferencesStore";
+import { LayoutGrid, List, Heart } from "lucide-react";
 
 /**
  * Thanh filter: search + chọn cuisine + đổi grid/list.
@@ -85,22 +86,24 @@ export function RecipeFilters() {
       </div>
 
       {/* Toggle grid/list -> chỉ đổi client state, không gọi lại API */}
-      <div className="flex gap-1 rounded-lg border border-gray-200 p-1">
+      <div className="flex gap-1 rounded-full border bg-card p-1">
         <Button
           type="button"
           size="sm"
           variant={viewMode === "grid" ? "primary" : "ghost"}
+          aria-pressed={viewMode === "grid"}
           onClick={() => setViewMode("grid")}
         >
-          ▦ Lưới
+          <LayoutGrid size={16} aria-hidden="true"/> Lưới
         </Button>
         <Button
           type="button"
           size="sm"
           variant={viewMode === "list" ? "primary" : "ghost"}
+          aria-pressed={viewMode === "list"}
           onClick={() => setViewMode("list")}
         >
-          ≣ Danh sách
+          <List size={16} aria-hidden="true"/> Danh sách
         </Button>
       </div>
 
@@ -112,7 +115,7 @@ export function RecipeFilters() {
         className="whitespace-nowrap"
         onClick={() => setFavoritesOnly(!favoritesOnly)}
       >
-        Chỉ xem yêu thích
+        <Heart size={16} aria-hidden="true"/> Chỉ xem yêu thích
       </Button>
     </div>
   );

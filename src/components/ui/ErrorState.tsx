@@ -1,4 +1,5 @@
 import { Button } from "./Button";
+import { CircleAlert } from "lucide-react";
 
 interface ErrorStateProps {
   message?: string;
@@ -11,11 +12,11 @@ export function ErrorState({
   onRetry,
 }: ErrorStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-2xl">
-        ⚠️
+    <div role="alert" className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+      <div className="flex size-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+        <CircleAlert aria-hidden="true"/>
       </div>
-      <p className="text-sm text-red-700">{message}</p>
+      <p className="text-sm text-destructive">{message}</p>
       {onRetry && (
         <Button variant="secondary" size="sm" onClick={onRetry}>
           Thử lại
