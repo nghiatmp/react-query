@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MealPlanner } from "./MealPlanner";
@@ -77,5 +77,14 @@ describe("planner mutation controls during auth transitions", () => {
     expect(screen.getByRole("button", { name: "Sửa Mì" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Xóa Mì" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Thêm từ thực đơn" })).toBeDisabled();
+  });
+
+  it("reports the inserted count returned by shopping persistence", () => {
+    shoppingMutation.mutate.mockImplementation((_action: unknown, options?: { onSuccess?: (inserted: number) => void }) => options?.onSuccess?.(0));
+
+    render(<ShoppingList initialWeek={fixtures.weekStart}/>);
+    fireEvent.click(screen.getByRole("button", { name: "Thêm từ thực đơn" }));
+
+    expect(screen.getByRole("status")).toHaveTextContent("Đã thêm 0 nguyên liệu từ thực đơn");
   });
 });

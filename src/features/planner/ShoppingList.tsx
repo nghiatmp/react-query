@@ -31,7 +31,7 @@ function ShoppingContent({ initialWeek }: { initialWeek: string }) {
     if (!plan.data || !recipes.data || !items.data) return;
     const generated = shoppingFromWeek(plan.data, recipes.data, items.data);
     if (!generated.length) { setNotice("Không có nguyên liệu mới. Thêm món vào thực đơn hoặc thêm mục thủ công."); return; }
-    mutation.mutate({ type: "add", items: generated }, { onSuccess: () => setNotice(`Đã thêm ${generated.length} nguyên liệu từ thực đơn. Các mục cũ được giữ nguyên.`) });
+    mutation.mutate({ type: "add", items: generated }, { onSuccess: inserted => setNotice(`Đã thêm ${inserted ?? 0} nguyên liệu từ thực đơn. Các mục cũ được giữ nguyên.`) });
   }
   return <>
     <div className="mb-8 flex flex-wrap items-end justify-between gap-5"><div><p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">Chuẩn bị một chút, thảnh thơi cả tuần</p><h1 className="text-4xl sm:text-5xl">Giỏ đi chợ của bạn</h1><p className="mt-3 text-sm leading-6 text-muted-foreground">Từ thực đơn đến căn bếp, từng nguyên liệu đều sẵn sàng.</p></div><Button onClick={() => { mutation.reset(); setEditor("new"); }} disabled={writeDisabled || loading || items.isError}><Plus size={17} aria-hidden="true"/>Thêm nguyên liệu</Button></div>

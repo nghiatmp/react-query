@@ -20,7 +20,13 @@ export async function localItems(week: string): Promise<ShoppingItem[]> {
 export async function localAddItems(week: string, items: ShoppingItem[]) {
   const current = await localItems(week);
   const ids = new Set(current.map(i => i.id));
-  localStorage.setItem(itemsKey(week), JSON.stringify([...current, ...items.filter(i => !ids.has(i.id)).map(i => itemSchema.parse(i))]));
+  const inserted = items.flatMap(item => {
+    if (ids.has(item.id)) return [];
+    ids.add(item.id);
+    return [itemSchema.parse(item)];
+  });
+  localStorage.setItem(itemsKey(week), JSON.stringify([...current, ...inserted]));
+  return inserted.length;
 }
 export async function localEditItem(week: string, id: string, patch: Partial<ShoppingItem>) {
   const items = await localItems(week);

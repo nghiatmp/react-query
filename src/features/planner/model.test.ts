@@ -49,9 +49,9 @@ describe("calendar and shopping behavior", () => {
     const previous = await local.localWeek("2026-09-21");
     await local.localChangeWeek(week, current => ({ ...current, slots: previous.slots }));
     const generated = shoppingFromWeek(await local.localWeek(week), [recipe], []);
-    await local.localAddItems(week, generated);
+    await expect(local.localAddItems(week, generated)).resolves.toBe(2);
     await local.localEditItem(week, generated[0].id, { amount: "3 quả", checked: true });
-    await local.localAddItems(week, generated);
+    await expect(local.localAddItems(week, generated)).resolves.toBe(0);
     expect(await local.localItems(week)).toHaveLength(2);
     expect((await local.localItems(week))[0]).toMatchObject({ amount: "3 quả", checked: true });
     expect(await local.localItems("2026-10-05")).toEqual([]);

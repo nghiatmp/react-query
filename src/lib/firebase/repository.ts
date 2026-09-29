@@ -59,11 +59,15 @@ export async function cloudItems(uid: string, weekStart: string): Promise<Shoppi
 }
 export async function cloudAddItems(uid: string, weekStart: string, items: ShoppingItem[]) {
   // Per-item transactions avoid overwriting checked/edited items from another device.
-  for (const item of items) await runTransaction(getFirebase().db, async tx => {
+  let inserted = 0;
+  for (const item of items) inserted += await runTransaction(getFirebase().db, async tx => {
     const target = ref(uid, `weeks/${weekStart}/items/${item.id}`);
     const old = await tx.get(target);
-    if (!old.exists()) tx.set(target, itemFieldsSchema.parse(itemFieldsSchema.strip().parse(item)));
+    if (old.exists()) return 0;
+    tx.set(target, itemFieldsSchema.parse(itemFieldsSchema.strip().parse(item)));
+    return 1;
   });
+  return inserted;
 }
 export async function cloudEditItem(uid: string, weekStart: string, id: string, patch: Partial<ShoppingItem>) {
   const fields = itemFieldsSchema.partial().parse(patch);
