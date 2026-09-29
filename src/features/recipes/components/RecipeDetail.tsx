@@ -62,7 +62,7 @@ export function RecipeDetail({ recipeId, onEdit, onDeleted }: RecipeDetailProps)
           variant="ghost"
           size="sm"
           className={isFavorite ? "text-destructive" : "text-muted-foreground"}
-          disabled={favorites.pending}
+          disabled={favorites.disabled}
           onClick={() => favorites.toggle(recipe.id)}
           aria-label="Yêu thích"
           aria-pressed={isFavorite}

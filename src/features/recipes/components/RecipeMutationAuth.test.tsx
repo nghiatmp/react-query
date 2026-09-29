@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RecipeDetail } from "./RecipeDetail";
 import { RecipeForm } from "./RecipeForm";
+import { RecipeCard } from "./RecipeCard";
 import { RecipesPage } from "./RecipesPage";
 import { useDeleteRecipe } from "../hooks/useDeleteRecipe";
 import { useRecipe } from "../hooks/useRecipe";
@@ -31,7 +32,7 @@ const recipe: Recipe = {
 
 vi.mock("@/features/auth/AuthProvider", () => ({ useAuth: () => authState }));
 vi.mock("@/features/auth/useFavorites", () => ({
-  useFavorites: () => ({ ids: [], toggle: vi.fn(), pending: false, error: null, retry: vi.fn() }),
+  useFavorites: () => ({ ids: [], toggle: vi.fn(), disabled: !authState.ready || authState.busy, pending: false, error: null, retry: vi.fn() }),
 }));
 vi.mock("../hooks/useRecipes", () => ({ useRecipes: vi.fn() }));
 vi.mock("../hooks/useRecipe", () => ({ useRecipe: vi.fn() }));
@@ -67,9 +68,14 @@ describe("recipe mutation controls during auth resolution", () => {
   });
 
   it("disables edit and delete actions", () => {
-    withQueryClient(<RecipeDetail recipeId="r1" onEdit={vi.fn()} onDeleted={vi.fn()}/>);
+    const detail = withQueryClient(<RecipeDetail recipeId="r1" onEdit={vi.fn()} onDeleted={vi.fn()}/>);
     expect(screen.getByRole("button", { name: "Xoá" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Sửa" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Yêu thích" })).toBeDisabled();
+    detail.unmount();
+
+    withQueryClient(<RecipeCard recipe={recipe} viewMode="grid" onOpen={vi.fn()}/>);
+    expect(screen.getByRole("button", { name: "Yêu thích" })).toBeDisabled();
   });
 
   it("disables form submission", () => {
@@ -100,8 +106,12 @@ describe("recipe mutation controls during auth resolution", () => {
 
   it("enables anonymous mutation controls after auth settles", () => {
     authState.ready = true;
-    withQueryClient(<RecipesPage/>);
+    const page = withQueryClient(<RecipesPage/>);
 
     for (const button of screen.getAllByRole("button", { name: /Thêm công thức/ })) expect(button).toBeEnabled();
+    page.unmount();
+
+    withQueryClient(<RecipeCard recipe={recipe} viewMode="grid" onOpen={vi.fn()}/>);
+    expect(screen.getByRole("button", { name: "Yêu thích" })).toBeEnabled();
   });
 });
